@@ -13,9 +13,8 @@ async function main() {
     const rewardPoolAddr = YALINK_REWARD_ADDR;
     const rewardTokenAddr = DEGEN_TOKEN_ADDR;
     const rewardTokenTicker = "DEGEN";
-    const prices = await lookUpPrices(["spaghetti"]);
-    const stakingTokenPrice = await getYALINKVPrice(App)
-    const rewardTokenPrice = prices["spaghetti"].usd;
+    const stakingTokenPrice = await getYALINKVPrice(App);
+    const rewardTokenPrice = await getDEGENPrice(App);
 
     // DO NOT CHANGE BELOW
 
@@ -34,7 +33,6 @@ async function main() {
 
     // Find out reward rate
     const weekly_reward = await get_synth_weekly_rewards(P_STAKING_POOL) / 1e18;
-    const nextHalving = await getPeriodFinishForReward(P_STAKING_POOL);
 
     const rewardPerToken = weekly_reward / totalStakedAmount;
 
@@ -63,12 +61,12 @@ async function main() {
    _print(`Weekly ROI in USD : ${toFixed(WeeklyROI, 4)}%`)
    _print(`APY (unstable)    : ${toFixed(WeeklyROI * 52, 4)}% \n`)
 
-    const timeTilHalving = nextHalving - (Date.now() / 1000);
-
-    if (timeTilHalving > 604800) {
-        _print(`Reward starting   : in ${forHumans(timeTilHalving - 604800)} \n`);
+    const startTime = await getPeriodStartForReward(P_STAKING_POOL);
+    const endTime = await getPeriodFinishForReward(P_STAKING_POOL);
+    if (startTime > (Date.now() / 1000)) {
+       _print(`Reward starting   : in ${forHumans(startTime - (Date.now() / 1000))} \n`);
     } else {
-        _print(`Reward ending     : in ${forHumans(timeTilHalving)} \n`);
+       _print(`Reward ending     : in ${forHumans(endTime - (Date.now() / 1000))} \n`);
     }
 
     const approveTENDAndStake = async function () {

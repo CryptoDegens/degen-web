@@ -15,12 +15,12 @@ async function main() {
     const rewardPoolAddr = DEGEN_WETH_DEGEN_REWARD_ADDR;
     const rewardTokenAddr = DEGEN_TOKEN_ADDR;
     const rewardTokenTicker = "DEGEN";
-    const prices = await lookUpPrices(["ethereum", "spaghetti"]);
+    const prices = await lookUpPrices(["ethereum"]);
     const pairTokenPrice = prices["ethereum"].usd;
-    const rewardTokenPrice = prices["spaghetti"].usd;
+    const rewardTokenPrice = await getDEGENPrice(App);
 
     // DO NOT CHANGE BELOW
-    
+
     const stakingToken = new ethers.Contract(stakingTokenAddr, ERC20_ABI, App.provider);
     const pairToken = new ethers.Contract(pairTokenAddr, ERC20_ABI, App.provider);
     const rewardToken = new ethers.Contract(rewardTokenAddr, ERC20_ABI, App.provider);
@@ -45,7 +45,6 @@ async function main() {
 
     // Find out reward rate
     const weekly_reward = await get_synth_weekly_rewards(P_STAKING_POOL) / 1e18;
-    const nextHalving = await getPeriodFinishForReward(P_STAKING_POOL);
 
     const rewardPerToken = weekly_reward / totalStakedAmount;
 
@@ -75,12 +74,12 @@ async function main() {
    _print(`Weekly ROI in USD : ${toFixed(WeeklyROI, 4)}%`)
    _print(`APY (unstable)    : ${toFixed(WeeklyROI * 52, 4)}% \n`)
 
-    const timeTilHalving = nextHalving - (Date.now() / 1000);
-
-    if (timeTilHalving > 604800) {
-        _print(`Reward starting   : in ${forHumans(timeTilHalving - 604800)} \n`);
+    const startTime = await getPeriodStartForReward(P_STAKING_POOL);
+    const endTime = await getPeriodFinishForReward(P_STAKING_POOL);
+    if (startTime > (Date.now() / 1000)) {
+        _print(`Reward starting   : in ${forHumans(startTime - (Date.now() / 1000))} \n`);
     } else {
-        _print(`Reward ending     : in ${forHumans(timeTilHalving)} \n`);
+        _print(`Reward ending     : in ${forHumans(endTime - (Date.now() / 1000))} \n`);
     }
 
     const approveTENDAndStake = async function () {

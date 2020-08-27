@@ -253,6 +253,10 @@ const getPeriodFinishForReward = async function (reward_contract_instance) {
     return await reward_contract_instance.periodFinish();
 };
 
+const getPeriodStartForReward = async function (reward_contract_instance) {
+    return await reward_contract_instance.starttime();
+};
+
 const ID = function () {
     // Math.random should be unique because of its seeding algorithm.
     // Convert it to base 36 (numbers + letters), and grab the first 9 characters
@@ -511,6 +515,11 @@ const getYUSDCVPrice = async function (App) {
     const vaultContract = new ethers.Contract(vaultAddress, YEARN_VAULT_ABI, App.provider);
     const currentPricePerFullShare = await vaultContract.getPricePerFullShare() / 1e18;
     return currentPricePerFullShare
+}
+
+const getDEGENPrice = async function (App) {
+    // temporary place holder until more pricing info is available
+    return 1.00000
 }
 
 const print_warning = function() {
